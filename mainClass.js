@@ -16,6 +16,7 @@ class ConnectFour {
   init() {
     let initHTML = `
     <div id="game-div" class="d-flex justify-content-center align-items-center">
+      <button id="reset-btn" class="shadow-lg fs-1 fw-bold"> <i class="fa-solid fa-arrows-rotate"></i> </button>
       <div id="game-canvas"> </div>
     </div>`;
 
@@ -47,12 +48,14 @@ class ConnectFour {
   }
 
   setControls() {
-    $(".box").click((e) => {
+    $(".box").click( e => {
       let boxEl = $(e.target);
       let [className, rowID, colID] = boxEl.attr("id").split("-");
 
       this.manageControl(boxEl, rowID, colID);
     });
+
+    $("#reset-btn").click( e=> this.resetGame() ).toggle(false)
   }
 
   manageControl(boxEl, rowID, colID) {
@@ -66,8 +69,8 @@ class ConnectFour {
     this.connect2D[rowID][colID] = this.currentPlayer;
     boxEl.addClass(color);
 
-    this.checkResult(rowID, colID, this.currentPlayer);
-    this.currentPlayer = this.currentPlayer == 1 ? 2 : 1;
+    this.checkResult(parseInt(rowID), parseInt(colID) , this.currentPlayer);
+    this.currentPlayer = (this.currentPlayer == 1) ? 2 : 1;
   }
 
   checkResult(rowID, colID, currentPlayer) {
@@ -86,21 +89,16 @@ class ConnectFour {
     };
 
     for (let index = 1; index < 4; index++) {
-      const rightCheck = connect2D[rowID]
-        ? connect2D[rowID][colID + index]
-        : false;
-      if (rightCheck == currentPlayer && check.pointRight.status)
-        check.pointRight.point++;
+
+      let rightCheck = connect2D[rowID][colID + index]
+      if (rightCheck == currentPlayer && check.pointRight.status) check.pointRight.point++;
       else check.pointRight.status = false;
 
-      const leftCheck = connect2D[rowID]
-        ? connect2D[rowID][colID - index]
-        : false;
-      if (leftCheck == currentPlayer && check.pointLeft.status)
-        check.pointLeft.point++;
+      let leftCheck = connect2D[rowID][colID - index]
+      if (leftCheck == currentPlayer && check.pointLeft.status) check.pointLeft.point++;
       else check.pointLeft.status = false;
 
-      const bottomCheck = connect2D[rowID - index]
+      let bottomCheck = connect2D[rowID - index]
         ? connect2D[rowID - index][colID]
         : false;
       if (bottomCheck == currentPlayer && check.pointBottom.status)
@@ -109,28 +107,28 @@ class ConnectFour {
 
       // Diagonals
 
-      const topRightCheck = connect2D[rowID + index]
+      let topRightCheck = connect2D[rowID + index]
         ? connect2D[rowID + index][colID + index]
         : false;
       if (topRightCheck == currentPlayer && check.pointTopRight.status)
         check.pointTopRight.point++;
       else check.pointTopRight.status = false;
 
-      const topLeftCheck = connect2D[rowID + index]
+      let topLeftCheck = connect2D[rowID + index]
         ? connect2D[rowID + index][colID - index]
         : false;
       if (topLeftCheck == currentPlayer && check.pointTopLeft.status)
         check.pointTopLeft.point++;
       else check.pointTopLeft.status = false;
 
-      const bottomRightCheck = connect2D[rowID - index]
+      let bottomRightCheck = connect2D[rowID - index]
         ? connect2D[rowID - index][colID + index]
         : false;
       if (bottomRightCheck == currentPlayer && check.pointBottomRight.status)
         check.pointBottomRight.point++;
       else check.pointBottomRight.status = false;
 
-      const bottomLeftCheck = connect2D[rowID - index]
+      let bottomLeftCheck = connect2D[rowID - index]
         ? connect2D[rowID - index][colID - index]
         : false;
       if (bottomLeftCheck == currentPlayer && check.pointBottomLeft.status)
@@ -142,6 +140,7 @@ class ConnectFour {
   }
 
   countPoints(check, currentPlayer) {
+    console.log(check);
     if (
       check.pointRight.point + check.pointLeft.point >= 3 ||
       check.pointBottom.point >= 3 ||
@@ -150,13 +149,24 @@ class ConnectFour {
       check.pointRight.point + check.pointLeft.point >= 3
     ) {
       this.gameStatus = false;
-      swal.fire(`Player ${currentPlayer} Won`, "", "success");
+
+      Swal.fire({ title: `Player ${currentPlayer} Won`, showConfirmButton: false, showCloseButton: true, icon: 'success' })
+      .then((result) => {
+        setTimeout(() => {
+          $("#reset-btn").toggle(true)
+          $("#game-div").toggle(false)
+        }, 3000);
+      })
     }
   }
 
   resetGame() {
     $(".box").removeClass("red green");
-    this.connect2D = blankArray2D(x, y);
+    this.connect2D = this.createBlankArray2D( this.x, this.y);
+    this.gameStatus = true;
+    
+    $("#reset-btn").toggle(false)
+    $("#game-div").toggle(this)
   }
 }
 

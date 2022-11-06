@@ -33,11 +33,24 @@ head {
   background-color: rgba(53, 117, 94, 0.5);
 }
 
-.footer{
+#reset-btn {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: none;
+  border-radius: 100%;
+  z-index: 1;
+  width: 100px;
+  height: 100px;
+  background: white;
+}
+
+.footer {
   cursor: pointer;
   text-align: center;
   font-weight: 600;
-  padding: .7rem 2rem;
+  padding: 0.7rem 2rem;
   border-radius: 1rem 0 0 0;
   background-color: white;
   position: fixed;
