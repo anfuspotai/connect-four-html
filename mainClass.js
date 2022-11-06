@@ -19,7 +19,7 @@ class ConnectFour {
     <div id="game-div" class="d-flex justify-content-center align-items-center">
       <button id="turn-btn" class="shadow-lg fs-1 fw-bold green"> 1 </button>
       <button id="reset-btn" class="shadow-lg fs-1 fw-bold"> <i class="fa-solid fa-arrows-rotate"></i> </button>
-      <div id="game-canvas"> </div>
+      <div id="game-canvas" class="shadow-lg"> </div>
     </div>`;
 
     this.gameRoot.prepend(initHTML);
@@ -43,7 +43,7 @@ class ConnectFour {
     $("#game-canvas").prepend(`
         <div class="row justify-content-center">
           ${cols.map( (e, colID) =>
-                `<div class="box" id="box-${rowID}-${colID}"></div>`
+                `<div class="box" id="box-${rowID}-${colID}" class="shadow-lg""></div>`
             ).join('')}
         </div>
       `);
