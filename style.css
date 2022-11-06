@@ -1,67 +1,54 @@
 body,
 head {
-  background: #123 !important;
+  background: rgb(177, 213, 247) !important;
 }
 
 #game-div {
-  height: 100vh
+  height: 98vh;
 }
 
 .box {
-  border: .2rem solid rgba(0, 0, 0, 0.6);
-  border-radius: .7rem;
-  margin: 12px;
-  width: 60px !important;
-  height: 60px !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border: 0.2rem solid rgba(0, 0, 0, 0.6);
+  border-radius: 0.7rem;
+  margin: 9px;
+  width: 10vw;
+  height: 10vw;
+  max-width: 60px;
+  max-height: 60px;
   background-color: white;
   cursor: pointer;
-  transition: .2s ease-in;
+  transition: 0.2s ease-in;
 }
-
 
 .box:hover {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(251, 222, 172, 1);
 }
-
 
 .box.red {
-  background-color: rgba(255, 50, 50, 0.4);
-}
-
-.box.red:hover {
-  background-color: rgba(255, 50, 50, 0.6);
+  background-color: rgba(251, 102, 89, 0.5);
 }
 
 .box.green {
-  background-color: rgba(65, 245, 65, 0.6);
+  background-color: rgba(53, 117, 94, 0.5);
 }
 
-.box.green:hover {
-  background-color: rgba(65, 245, 65, 0.7);
-}
-
-.footer {
-  position: fixed;
-  bottom: 10px;
-  right: 15px;
-  opacity: 30%;
+.footer{
+  cursor: pointer;
+  text-align: center;
   font-weight: 600;
-  cursor: pointer;
-}
-
-.container {
-  justify-content: center;
-  align-items: center;
-}
-
-.icon-btn {
-  cursor: pointer;
+  padding: .7rem 2rem;
+  border-radius: 1rem 0 0 0;
+  background-color: white;
+  position: fixed;
+  bottom: 0;
+  right: 0;
 }
 
 @media only screen and (max-width: 900px) {
-  .container {
-    padding-top: 10%;
-    align-items: flex-start;
+  .box {
+    border: 0.1rem solid rgba(0, 0, 0, 0.6);
+    border-radius: 0.5rem;
+    margin: 6px;
   }
-
 }
