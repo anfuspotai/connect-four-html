@@ -1,0 +1,67 @@
+body,
+head {
+  background: #123 !important;
+}
+
+#game-div {
+  height: 100vh
+}
+
+.box {
+  border: .2rem solid rgba(0, 0, 0, 0.6);
+  border-radius: .7rem;
+  margin: 12px;
+  width: 60px !important;
+  height: 60px !important;
+  background-color: white;
+  cursor: pointer;
+  transition: .2s ease-in;
+}
+
+
+.box:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+
+.box.red {
+  background-color: rgba(255, 50, 50, 0.4);
+}
+
+.box.red:hover {
+  background-color: rgba(255, 50, 50, 0.6);
+}
+
+.box.green {
+  background-color: rgba(65, 245, 65, 0.6);
+}
+
+.box.green:hover {
+  background-color: rgba(65, 245, 65, 0.7);
+}
+
+.footer {
+  position: fixed;
+  bottom: 10px;
+  right: 15px;
+  opacity: 30%;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.container {
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-btn {
+  cursor: pointer;
+}
+
+@media only screen and (max-width: 900px) {
+  .container {
+    padding-top: 10%;
+    align-items: flex-start;
+  }
+
+}
