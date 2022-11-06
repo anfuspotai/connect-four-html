@@ -11,11 +11,13 @@ class ConnectFour {
     this.currentPlayer = 1;
 
     this.gameRoot = $(elemID).length ? $(elemID) : $("body");
+    this.gameLog = []
   }
 
   init() {
     let initHTML = `
     <div id="game-div" class="d-flex justify-content-center align-items-center">
+      <button id="turn-btn" class="shadow-lg fs-1 fw-bold green"> 1 </button>
       <button id="reset-btn" class="shadow-lg fs-1 fw-bold"> <i class="fa-solid fa-arrows-rotate"></i> </button>
       <div id="game-canvas"> </div>
     </div>`;
@@ -52,25 +54,46 @@ class ConnectFour {
       let boxEl = $(e.target);
       let [className, rowID, colID] = boxEl.attr("id").split("-");
 
-      this.manageControl(boxEl, rowID, colID);
+      this.manageControl(parseInt(rowID), parseInt(colID) );
     });
 
     $("#reset-btn").click( e=> this.resetGame() ).toggle(false)
+    $("#turn-btn").click( e=> this.undo() )
+
+    $(document).keydown( e => {
+      let whichKey = e.which 
+
+      switch (whichKey) {
+        case 16:
+          this.undo()
+          break;
+      
+        default:
+          break;
+      }
+
+    } )
   }
 
-  manageControl(boxEl, rowID, colID) {
+  manageControl(rowID, colID) {
     if (!this.gameStatus) return false;
-    
-    if (this.connect2D[rowID][colID] !== 0) return false;
 
-    if (rowID != 0 && this.connect2D[rowID - 1][colID] == 0)  return false;
+    for (let index = 0; index < this.connect2D.length; index++) {
+      const element = this.connect2D[index][colID];
+      rowID = index
+      if(element == 0) break;
+    }
+
+    let boxEl = $(`#box-${rowID}-${colID}`);
 
     let color = this.currentPlayer == 1 ? "green" : "red";
     this.connect2D[rowID][colID] = this.currentPlayer;
     boxEl.addClass(color);
 
-    this.checkResult(parseInt(rowID), parseInt(colID) , this.currentPlayer);
-    this.currentPlayer = (this.currentPlayer == 1) ? 2 : 1;
+    this.gameLog.push({ rowID, colID, playedBy: this.currentPlayer })
+
+    this.checkResult( rowID, colID, this.currentPlayer);
+    this.changeTurn()
   }
 
   checkResult(rowID, colID, currentPlayer) {
@@ -154,9 +177,37 @@ class ConnectFour {
         setTimeout(() => {
           $("#reset-btn").toggle(true)
           $("#game-div").toggle(false)
-        }, 3000);
+        }, 2000);
       })
     }
+  }
+
+
+  changeTurn() {
+
+    this.currentPlayer = (this.currentPlayer == 1) ? 2 : 1;
+    let color = this.currentPlayer == 1 ? "green" : "red";
+
+    $("#turn-btn").removeClass("red green");
+    $("#turn-btn").addClass(color).html(this.currentPlayer)
+  }
+
+  undo() {
+
+    let lastMove = this.gameLog.pop()
+    if(!lastMove) return
+
+    this.currentPlayer = (lastMove.playedBy == 1) ? 2 : 1;
+    let color = this.currentPlayer == 1 ? "green" : "red";
+    $(`#box-${lastMove.rowID}-${lastMove.colID}`).removeClass("red green");
+    
+    this.connect2D[lastMove.rowID][lastMove.colID] = 0
+    
+    this.changeTurn()
+
+    this.gameStatus = true;
+    $("#reset-btn").toggle(false)
+
   }
 
   resetGame() {
