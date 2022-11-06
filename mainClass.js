@@ -140,7 +140,6 @@ class ConnectFour {
   }
 
   countPoints(check, currentPlayer) {
-    console.log(check);
     if (
       check.pointRight.point + check.pointLeft.point >= 3 ||
       check.pointBottom.point >= 3 ||
