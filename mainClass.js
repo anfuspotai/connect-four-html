@@ -84,6 +84,9 @@ class ConnectFour {
       if(element == 0) break;
     }
 
+    if (this.connect2D[rowID][colID] !== 0) return false;
+
+
     let boxEl = $(`#box-${rowID}-${colID}`);
 
     let color = this.currentPlayer == 1 ? "green" : "red";
