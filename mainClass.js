@@ -1,20 +1,28 @@
 class ConnectFour {
-  constructor(elemID, x, y, playerOne, playerTwo) {
-    // Note
-    console.log("This game need jquery-3.6.0 and bootstrap v5.2 to work");
+  constructor(userData = {}) {
+    
+    // Notes
+    console.log("ConnectFour need jquery-3.6.0 and bootstrap v5.2 to work");
+    console.log("{ elem: 'body', x: 6, y: 7 }");
 
-    this.x = x || 7;
-    this.y = y || 7;
-    this.connect2D = this.createBlankArray2D(this.x, this.y);
+    if(typeof userData != 'object') userData = {} //Only object is allowed
+    this.config = { elem: 'body', x: 6, y: 7, ...userData } //Initial Config overwritten by user given data
 
-    this.gameStatus = true;
-    this.currentPlayer = 1;
+    this.x = this.config.x; //Number of row
+    this.y = this.config.y; //Number of cols
+    this.connect2D = this.createBlankArray2D(this.x, this.y); //2D Array for the game
 
-    this.gameRoot = $(elemID).length ? $(elemID) : $("body");
-    this.gameLog = []
+    this.gameStatus = true; //Cannot make a move if false
+    this.currentPlayer = 1; // two players 1 and 2
+
+    this.gameLog = [] //Hisotry for undo function
+    this.gameRoot = $(this.config.elem).length ? $(this.config.elem) : $("body"); //Root div
   }
 
+  // Initializtion of the game
   init() {
+
+    // Appending the initial div with undo, reset and the canvas to add box
     let initHTML = `
     <div id="game-div" class="d-flex justify-content-center align-items-center">
       <button id="turn-btn" class="shadow-lg fs-1 fw-bold green"> 1 </button>
@@ -23,48 +31,58 @@ class ConnectFour {
     </div>`;
 
     this.gameRoot.prepend(initHTML);
-    this.connect2D.map((cols, rowID) => this.createBox(cols, rowID));
-    this.setControls();
 
+    // Creating boxes one row at a time
+    this.connect2D.map((cols, rowID) => this.createBox(cols, rowID));
+
+    //make all elements interactives
+    this.setControls(); 
   }
 
-  createBlankArray2D(a, b) {
+  // Function to create 2D array with given rows & cols. All values will be zero
+  createBlankArray2D(row, col) {
     let newArray = [];
 
-    // creating two dimensional array
-    for (let i = 0; i < a; i++) {
+    // creating 2D Array
+    for (let i = 0; i < row; i++) {
       newArray[i] = [];
-      for (let j = 0; j < b; j++) newArray[i].push(0);
+      for (let j = 0; j < col; j++) newArray[i].push(0);
     }
     return newArray;
   }
 
+  // Stack row of boxes with data-col attribute and id {box-row-col} format
   createBox(cols, rowID) {
     $("#game-canvas").prepend(`
         <div class="row justify-content-center">
           ${cols.map( (e, colID) =>
-                `<div class="box" id="box-${rowID}-${colID}" class="shadow-lg""></div>`
+                `<div class="box" data-col="${colID}" id="box-${rowID}-${colID}"></div>`
             ).join('')}
         </div>
       `);
   }
 
+  // Making the game interactive and adding hotkeys
   setControls() {
+
+    // Handle when user clicks on a box
     $(".box").click( e => {
       let boxEl = $(e.target);
-      let [className, rowID, colID] = boxEl.attr("id").split("-");
+      let colID = boxEl.attr("data-col")
 
-      this.manageControl(parseInt(rowID), parseInt(colID) );
+      this.boxClickHandler( parseInt(colID) );
     });
 
+    // Adding event listners to the Initial buttons
     $("#reset-btn").click( e=> this.resetGame() ).toggle(false)
     $("#turn-btn").click( e=> this.undo() )
 
+    // Handling keyboard shortcuts
     $(document).keydown( e => {
       let whichKey = e.which 
 
       switch (whichKey) {
-        case 16:
+        case 16: //shift
           this.undo()
           break;
       
@@ -75,30 +93,51 @@ class ConnectFour {
     } )
   }
 
-  manageControl(rowID, colID) {
-    if (!this.gameStatus) return false;
+  // The name says it all..
+  boxClickHandler(colID) {
 
+    //check if the game is stopped
+    if (!this.gameStatus) return false; 
+    
+    // Run a loop to get the first zero valued box in a row of selected column
+    let rowID = 0
+    
     for (let index = 0; index < this.connect2D.length; index++) {
       const element = this.connect2D[index][colID];
       rowID = index
       if(element == 0) break;
     }
 
+    // Return if the box is already taken.. only needed on the top most row
     if (this.connect2D[rowID][colID] !== 0) return false;
 
-
+    // Getting the element using the id format
     let boxEl = $(`#box-${rowID}-${colID}`);
 
+    // Changing color of the selected box
     let color = this.currentPlayer == 1 ? "green" : "red";
-    this.connect2D[rowID][colID] = this.currentPlayer;
     boxEl.addClass(color);
 
+    // Updating the 2D array and Game log
+    this.connect2D[rowID][colID] = this.currentPlayer;
     this.gameLog.push({ rowID, colID, playedBy: this.currentPlayer })
 
+    // Changes into next player and check result of the last move
     this.checkResult( rowID, colID, this.currentPlayer);
     this.changeTurn()
   }
 
+  // Change player turn and the color of the undo/player button
+  changeTurn() {
+
+    this.currentPlayer = (this.currentPlayer == 1) ? 2 : 1;
+    let color = this.currentPlayer == 1 ? "green" : "red";
+
+    $("#turn-btn").removeClass("red green");
+    $("#turn-btn").addClass(color).html(this.currentPlayer)
+  }
+
+  // Checking the four adjacent boxes of the selected box
   checkResult(rowID, colID, currentPlayer) {
     console.log( `Player --> ${currentPlayer}, Row --> ${rowID}, Col --> ${colID}` );
 
@@ -113,9 +152,16 @@ class ConnectFour {
       pointBottomRight: { point: 0, status: true },
       pointBottomLeft: { point: 0, status: true },
     };
+    
+    /*
+     Check in all direction in a single loop.. and note the points down
+     status is given to break the point++ if the flow was broken and don't need to count that direction anymore.
+     status is intially true and set to false once the flow is broken 
+     */
+    
+     for (let index = 1; index < 4; index++) {
 
-    for (let index = 1; index < 4; index++) {
-
+      // Horizontal
       let rightCheck = connect2D[rowID][colID + index]
       if (rightCheck == currentPlayer && check.pointRight.status) check.pointRight.point++;
       else check.pointRight.status = false;
@@ -124,6 +170,7 @@ class ConnectFour {
       if (leftCheck == currentPlayer && check.pointLeft.status) check.pointLeft.point++;
       else check.pointLeft.status = false;
 
+      // Vertical.. no need to check top ( has gravity.. cannot win upwards )
       let bottomCheck = connect2D[rowID - index]
         ? connect2D[rowID - index][colID]
         : false;
@@ -132,7 +179,6 @@ class ConnectFour {
       else check.pointBottom.status = false;
 
       // Diagonals
-
       let topRightCheck = connect2D[rowID + index]
         ? connect2D[rowID + index][colID + index]
         : false;
@@ -165,61 +211,50 @@ class ConnectFour {
     this.countPoints(check, currentPlayer);
   }
 
+  // Count the point of the last move. And announce the winner if it's a win
   countPoints(check, currentPlayer) {
+    // 3 points to your vicotry.. combining the 4 possible direction X, Y and 2 diagonals
     if (
       check.pointRight.point + check.pointLeft.point >= 3 ||
       check.pointBottom.point >= 3 ||
       check.pointTopRight.point + check.pointBottomLeft.point >= 3 ||
-      check.pointTopLeft.point + check.pointBottomRight.point >= 3 ||
-      check.pointRight.point + check.pointLeft.point >= 3
+      check.pointTopLeft.point + check.pointBottomRight.point >= 3
     ) {
+      // Game stops if any player won
       this.gameStatus = false;
 
+      // Alert the win and show reset button in x seconds
       Swal.fire({ title: `Player ${currentPlayer} Won`, showConfirmButton: false, showCloseButton: true, icon: 'success' })
-      .then((result) => {
-        setTimeout(() => {
-          $("#reset-btn").toggle(true)
-          $("#game-div").toggle(false)
-        }, 2000);
-      })
+      .then( result =>  setTimeout( () =>  $("#reset-btn").toggle(true) , 2000))
     }
   }
 
-
-  changeTurn() {
-
-    this.currentPlayer = (this.currentPlayer == 1) ? 2 : 1;
-    let color = this.currentPlayer == 1 ? "green" : "red";
-
-    $("#turn-btn").removeClass("red green");
-    $("#turn-btn").addClass(color).html(this.currentPlayer)
-  }
-
   undo() {
-
+    // Get and remove the last move from log.. do nothing if it's empty
     let lastMove = this.gameLog.pop()
     if(!lastMove) return
 
+    // Undo the last changes.. Box coloring and revert the 2D array
     this.currentPlayer = (lastMove.playedBy == 1) ? 2 : 1;
-    let color = this.currentPlayer == 1 ? "green" : "red";
     $(`#box-${lastMove.rowID}-${lastMove.colID}`).removeClass("red green");
-    
     this.connect2D[lastMove.rowID][lastMove.colID] = 0
     
     this.changeTurn()
 
+    // Set status back to true and hide reset btn, incase undo was clicked after finishing up the game
     this.gameStatus = true;
     $("#reset-btn").toggle(false)
-
   }
 
+  // Function to reset the game
   resetGame() {
+    // Remove all colors, clear the 2D array and the history logs
     $(".box").removeClass("red green");
     this.connect2D = this.createBlankArray2D( this.x, this.y);
     this.gameStatus = true;
+    this.gameLog = [] 
     
     $("#reset-btn").toggle(false)
-    $("#game-div").toggle(this)
   }
 }
 
